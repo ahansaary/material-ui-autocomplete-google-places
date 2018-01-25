@@ -1,64 +1,68 @@
-import React, { Component } from 'react';
-import { AutoComplete, MenuItem } from 'material-ui';
-import Marker from 'material-ui/svg-icons/maps/place';
-import PropTypes from 'prop-types';
+import React, { Component } from 'react'
+import { AutoComplete, MenuItem } from 'material-ui'
+import Marker from 'material-ui/svg-icons/maps/place'
+import PropTypes from 'prop-types'
 
 class GooglePlaceAutocomplete extends Component {
   constructor(props) {
-    super(props);
+    super(props)
 
     this.state = {
       data: [],
-      searchText: '',
-    };
+      searchText: ''
+    }
 
-    const google = window.google;
-    this.geocoder = new google.maps.Geocoder;
+    const google = window.google
+    this.geocoder = new google.maps.Geocoder()
 
     // Documentation for AutocompleteService
     // https://developers.google.com/maps/documentation/javascript/places-autocomplete#place_autocomplete_service
-    this.service = new google.maps.places.AutocompleteService(null);
+    this.service = new google.maps.places.AutocompleteService(null)
 
     // binding for functions
-    this.updateInput = this.updateInput.bind(this);
-    this.populateData = this.populateData.bind(this);
-    this.getCurrentDataState = this.getCurrentDataState.bind(this);
-    this.getLatLgn = this.getLatLgn.bind(this);
+    this.updateInput = this.updateInput.bind(this)
+    this.populateData = this.populateData.bind(this)
+    this.getCurrentDataState = this.getCurrentDataState.bind(this)
+    this.getLatLgn = this.getLatLgn.bind(this)
   }
 
   getCurrentDataState() {
-    return this.state.data;
+    return this.state.data
   }
 
   getLatLgn(locationID, cb) {
     this.geocoder.geocode({ placeId: locationID }, (results, status) => {
-      cb(results, status);
-    });
+      cb(results, status)
+    })
   }
 
   updateInput(searchText) {
     if (searchText.length > 0) {
-      this.setState({
-        searchText,
-      },
-      () => {
-        const outerScope = this;
-        this.service.getPlacePredictions({
-          input: this.state.searchText,
-          componentRestrictions: this.props.componentRestrictions,
-          types: this.props.types,
+      this.setState(
+        {
+          searchText
         },
-          (predictions) => {
-            if (predictions) {
-              outerScope.populateData(predictions);
+        () => {
+          const outerScope = this
+          this.service.getPlacePredictions(
+            {
+              input: this.state.searchText,
+              componentRestrictions: this.props.componentRestrictions,
+              types: this.props.types
+            },
+            predictions => {
+              if (predictions) {
+                outerScope.populateData(predictions)
+              }
             }
-          });
-      });
+          )
+        }
+      )
     }
   }
 
   populateData(array) {
-    this.setState({ data: array });
+    this.setState({ data: array })
   }
   render() {
     return (
@@ -87,67 +91,70 @@ class GooglePlaceAutocomplete extends Component {
           onChange={this.updateInput}
           filter={AutoComplete.noFilter}
           onNewRequest={(chosenRequest, index) => {
-            let dataItem = this.state.data[index];
+            let dataItem = this.state.data[index]
             // indexing bug
             if (!dataItem) {
-              dataItem = this.state.data[0];
+              dataItem = this.state.data[0]
             }
-            this.getLatLgn(dataItem.place_id, (results) => {
+            this.getLatLgn(dataItem.place_id, results => {
               this.props.results(
                 results[0].geometry.location.lat(),
-                results[0].geometry.location.lng(),
-              );
-            });
+                results[0].geometry.location.lng()
+              )
+            })
           }}
           dataSource={this.state.data.map((item, i, a) => {
-            if (i === a.length - 1) {
-              return {
-                text: '',
-                value: (
-                  <MenuItem
-                    style={{ cursor: 'default' }}
-                    disabled
-                    children={
-                      <div style={{ paddingTop: 20 }}>
-                        <img
-                          style={{ float: 'right' }}
-                          width={96}
-                          height={12}
-                          src="https://developers.google.com/places/documentation/images/powered-by-google-on-white.png"
-                          alt="presentation"
-                        />
-                      </div>
-                    }
-                  />
-                ) };
-            }
+            // if (i === a.length - 1) {
+            //   return {
+            //     text: '',
+            //     value: (
+            //       <MenuItem
+            //         style={{ cursor: 'default' }}
+            //         disabled
+            //         children={
+            //           <div style={{ paddingTop: 20 }}>
+            //             <img
+            //               style={{ float: 'right' }}
+            //               width={96}
+            //               height={12}
+            //               src="https://developers.google.com/places/documentation/images/powered-by-google-on-white.png"
+            //               alt="presentation"
+            //             />
+            //           </div>
+            //         }
+            //       />
+            //     ) };
+            // }
             return {
               text: item.description,
               value: (
                 <MenuItem
-                  style={this.props.menuItemStyle || {
-                    fontSize: 13,
-                    display: 'block',
-                    paddingRight: 20,
-                    overflow: 'hidden',
-                  }}
-                  innerDivStyle={this.props.innerDivStyle || { paddingRight: 38, paddingLeft: 38 }}
+                  style={
+                    this.props.menuItemStyle || {
+                      fontSize: 13,
+                      display: 'block',
+                      paddingRight: 20,
+                      overflow: 'hidden'
+                    }
+                  }
+                  innerDivStyle={
+                    this.props.innerDivStyle || {
+                      paddingRight: 38,
+                      paddingLeft: 38
+                    }
+                  }
                   // Used by Google Places / No user input
                   primaryText={item.description}
-                  leftIcon={
-                    <Marker
-                      style={{ width: '20px' }}
-                    />
-                  }
+                  leftIcon={<Marker style={{ width: '20px' }} />}
                 />
-              ) };
-          })
-        }
+              )
+            }
+          })}
         />
       </div>
-    );
+    )
   }
-  }
+}
 
 GooglePlaceAutocomplete.propTypes = {
   // Google componentRestrictions
@@ -180,7 +187,7 @@ GooglePlaceAutocomplete.propTypes = {
   // Prop types for dataSource
   innerDivStyle: PropTypes.object,
   menuItemStyle: PropTypes.object,
-  results: PropTypes.func,
-};
+  results: PropTypes.func
+}
 
-export default GooglePlaceAutocomplete;
+export default GooglePlaceAutocomplete
