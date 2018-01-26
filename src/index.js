@@ -58,6 +58,8 @@ class GooglePlaceAutocomplete extends Component {
           )
         }
       )
+    } else if (searchText.length === 0) {
+      this.setState({ searchText })
     }
   }
 
